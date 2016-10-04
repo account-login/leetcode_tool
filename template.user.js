@@ -2,11 +2,10 @@
 // @name            Tool for leetcode.com
 // @match           https://leetcode.com/problems/*
 // @description     This tool shows tables on database problems after you submit a wrong answer, so you don't need to read their unreadable JSON representation of tables.
-// @version         1.0
+// @version         1.1
 // ==/UserScript==
 
 // @todo table sorting, diff functionality
-// @todo render table on runtime error
 
 
 (function () {

@@ -17,6 +17,7 @@ var main = function ( $, _, sql_table ) {
     var input_id = '#result_wa_testcase_input';
     var output_id = '#result_wa_testcase_output';
     var expected_id = '#result_wa_testcase_expected';
+    var last_exe_id = '#last_executed_testcase_output';
 
     // styles for table
     var table_classes = [ 'pure-table', 'pure-table-bordered', 'pure-table-striped' ];
@@ -46,6 +47,9 @@ var main = function ( $, _, sql_table ) {
             .addClass( table_classes.join( ' ' ) );
     };
 
+    /**
+     * Render tables after "Wrong Answer" encountered.
+     */
     var show_table = function () {
         var table_ctn = $( '<div>' )
             .append( '<hr>' )
@@ -69,6 +73,21 @@ var main = function ( $, _, sql_table ) {
         wa_output.append( table_ctn );
     };
 
+    /**
+     * Render tables after "Runtime Error" encountered.
+     */
+    var show_le_table = function () {
+        var table_ctn = $( '<div>' )
+            .append( '<hr>' )
+            .append( $( '<div>' ).text( 'Inputs:' ) )
+            .append( get_input_tables( $( last_exe_id ) ) );
+
+        var last_exe = $( '#last_executed_testcase_output_row' );
+        // remove prevous tables
+        last_exe.children().first().nextAll().remove();
+        last_exe.append( table_ctn );
+    };
+
     var create_show_table_btn = function () {
         var btn = $( '<button>' )
             .text( 'Tablize!' )
@@ -80,38 +99,49 @@ var main = function ( $, _, sql_table ) {
         $( '#more-details' ).after( btn );
     };
 
-    var setup_wa_observer = function () {
-        var wa_output = $( '#wa_output' );
-        var observer = new MutationObserver( function ( mutations ) {
-            if ( wa_output.css( 'display' ) !== 'none' ) {
-                show_table();
+    /**
+     * Invoke callback when element is visible. Using MutationObserver
+     * @param {jQuery} elem
+     * @param {function} func
+     */
+    var setup_observer = function ( elem, func ) {
+        var observer = new MutationObserver( function () {
+            if ( elem.css( 'display' ) !== 'none' ) {
+                func();
             }
         } );
-
         // observe style attribute changes
-        observer.observe( wa_output.get( 0 ), { attributes: true } );
+        observer.observe( elem.get( 0 ), { attributes: true } );
     };
 
-    var setup_wa_poller = function () {
-        var wa_output = $( '#wa_output' );
+    /**
+     * Invoke callback when element is visible. Using setInterval()
+     * @param {jQuery} elem
+     * @param {function} func
+     */
+    var setup_poller = function ( elem, func ) {
         var is_showing = false;
-        var check_wa = function () {
-            if ( wa_output.is( ':visible' ) ) {
+        var check = function () {
+            if ( elem.is( ':visible' ) ) {
                 if ( !is_showing ) {
-                    show_table();
+                    func();
+                    is_showing = true;
                 }
             } else {
                 is_showing = false;
             }
         };
 
-        window.setInterval( check_wa, 500 );
+        window.setInterval( check, 500 );
     };
 
-    // show table after wrong answer appeared
     if ( MutationObserver ) {
-        setup_wa_observer();
+        // show tables after wrong answer appeared
+        setup_observer( $( '#wa_output' ), show_table );
+        // show tables after a runtime errer
+        setup_observer( $( '#last_executed_testcase_output_row' ), show_le_table );
     } else {
-        setup_wa_poller();
+        setup_poller( $( '#wa_output' ), show_table );
+        setup_poller( $( '#last_executed_testcase_output_row' ), show_le_table );
     }
 };

@@ -80,8 +80,6 @@ var main = function ( $, _, sql_table ) {
         $( '#more-details' ).after( btn );
     };
 
-    // create_show_table_btn();
-
     var setup_wa_observer = function () {
         var wa_output = $( '#wa_output' );
         var observer = new MutationObserver( function ( mutations ) {
@@ -90,7 +88,7 @@ var main = function ( $, _, sql_table ) {
             }
         } );
 
-        //observe changes
+        // observe style attribute changes
         observer.observe( wa_output.get( 0 ), { attributes: true } );
     };
 

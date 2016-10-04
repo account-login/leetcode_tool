@@ -5,6 +5,9 @@
 // @version         1.0
 // ==/UserScript==
 
+// @todo table sorting, diff functionality
+// @todo render table on runtime error
+
 
 (function () {
 
@@ -15,6 +18,7 @@
 
     bootstrap( main, {
         modules: [ {
+            // jQuery
             url: '//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js',
             has: function () {
                 return window.jQuery;
@@ -23,6 +27,7 @@
                 return window.$.noConflict();
             }
         }, {
+            // underscore
             url: '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js',
             has: function () {
                 return undefined;
@@ -31,11 +36,13 @@
                 return window._.noConflict();
             }
         }, {
+            // sql_table
             has: function () {
                 return sql_table;   // direct reference
             }
         } ],
         css: [
+            // pure.css
             '//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css'
         ]
     } );

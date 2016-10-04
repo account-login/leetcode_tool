@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name            Tool for leetcode.com
 // @match           https://leetcode.com/problems/*
+// @match           https://leetcode.com/submissions/detail/*
 // @description     This tool shows tables on database problems after you submit a wrong answer, so you don't need to read their unreadable JSON representation of tables.
-// @version         1.1
+// @version         1.2
 // ==/UserScript==
 
 // @todo table sorting, diff functionality

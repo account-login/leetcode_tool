@@ -5,8 +5,10 @@
 // Arguments correspond to the dependency references.
 // @see {@link bootstrap} for further information.
 var main = function ( $, _, sql_table ) {
-    // Is this a sql problem
-    if ( $( '*[ng-switch-when=mysql]' ).length === 0 ) {
+    // Is this a sql problem or sql submission
+    var has_sql = $( '*[ng-switch-when=mysql]' ).length > 0 // sql problem
+        || (window.pageData && window.pageData.getLangDisplay === 'mysql'); // sql submission
+    if ( !has_sql ) {
         return;
     }
 
@@ -105,6 +107,11 @@ var main = function ( $, _, sql_table ) {
      * @param {function} func
      */
     var setup_observer = function ( elem, func ) {
+        // already visible
+        if ( elem.is( ':visible' ) ) {
+            func();
+        }
+
         var observer = new MutationObserver( function () {
             if ( elem.css( 'display' ) !== 'none' ) {
                 func();

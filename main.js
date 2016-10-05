@@ -142,13 +142,15 @@ var main = function ( $, _, sql_table ) {
         window.setInterval( check, 500 );
     };
 
-    if ( MutationObserver ) {
-        // show tables after wrong answer appeared
-        setup_observer( $( '#wa_output' ), show_table );
-        // show tables after a runtime errer
-        setup_observer( $( '#last_executed_testcase_output_row' ), show_le_table );
+    var setup;
+    if ( !window.MutationObserver ) {
+        setup = setup_poller;
     } else {
-        setup_poller( $( '#wa_output' ), show_table );
-        setup_poller( $( '#last_executed_testcase_output_row' ), show_le_table );
+        setup = setup_observer;
     }
+
+    // show tables after wrong answer appeared
+    setup( $( '#wa_output' ), show_table );
+    // show tables after a runtime errer
+    setup( $( '#last_executed_testcase_output_row' ), show_le_table );
 };

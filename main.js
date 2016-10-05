@@ -107,17 +107,16 @@ var main = function ( $, _, sql_table ) {
      * @param {function} func
      */
     var setup_observer = function ( elem, func ) {
-        // already visible
-        if ( elem.is( ':visible' ) ) {
-            func();
-        }
-
-        var observer = new MutationObserver( function () {
-            if ( elem.css( 'display' ) !== 'none' ) {
+        var on_attr_changes = function () {
+            if ( elem.is( ':visible' ) ) {
                 func();
             }
-        } );
+        };
+
+        // elem may be visible already
+        on_attr_changes();
         // observe style attribute changes
+        var observer = new MutationObserver( on_attr_changes );
         observer.observe( elem.get( 0 ), { attributes: true } );
     };
 

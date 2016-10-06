@@ -52,7 +52,7 @@ var sql_table = (function ( factory ) {
         return $( '<table>' )
             .append( $( '<caption>' ).text( obj.name ) )
             .append( $( '<thead>' )
-                .append( $( '<tr>' ).append( wrap_text( obj.headers, '<td>' ) ) ) )
+                .append( $( '<tr>' ).append( wrap_text( obj.headers, '<th>' ) ) ) )
             .append( $( '<tbody>' )
                 .append( _( obj.values ).map( function ( row ) {
                     return $( '<tr>' ).append( wrap_text( row, '<td>' ) );

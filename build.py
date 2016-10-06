@@ -2,12 +2,18 @@
 
 
 import re
-import git  # pip install gitpython
+import shutil
+import click    # pip install ckick
+import git      # pip install gitpython
 
 
 INCLUDE_PATTERN = re.compile('^(\s*)//#\s+@include\s+(.+)\s*')
 GIT_META_PATTERN = re.compile('^(\s*//\s+@git\s+)<commit>(\s*)$')
 GIT_VERSION = git.Repo().head.commit.hexsha
+
+INPUT_USER_JS = 'template.user.js'
+BUILD_USER_JS = 'leetcode_tool.out.user.js'
+RELEASE_USER_JS = 'leetcode_tool.user.js'
 
 
 def get_include_directive(line):
@@ -21,7 +27,20 @@ def get_include_directive(line):
         return None
 
 
-def process(input_js, output_js):
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    """Build & release tool
+
+    Default command is `build`
+    """
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(build_js)
+
+
+@cli.command(name='build')
+def build_js(input_js=INPUT_USER_JS, output_js=BUILD_USER_JS):
+    """Build .user.js"""
     out_lines = []
     with open(input_js, 'rt', encoding='utf8') as in_file:
         version_added = False
@@ -48,9 +67,22 @@ def process(input_js, output_js):
         out_file.writelines(out_lines)
 
 
-def main():
-    process('template.user.js', 'leetcode_tool.user.js')
+@cli.command(name='release')
+def commit_build(build=BUILD_USER_JS, target=RELEASE_USER_JS):
+    """Commit .user.js to `build` branch"""
+    repo = git.Repo()
+    try:
+        # switch to build branch
+        repo.branches['build'].checkout()
+        # update builds
+        shutil.copyfile(build, target)
+        # commit it
+        repo.index.add([target])
+        repo.index.commit('Build from <{}>'.format(GIT_VERSION))
+    finally:
+        # switch back to master
+        repo.branches['master'].checkout()
 
 
 if __name__ == '__main__':
-    main()
+    cli()

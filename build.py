@@ -7,9 +7,10 @@ import click    # pip install ckick
 import git      # pip install gitpython
 
 
-INCLUDE_PATTERN = re.compile('^(\s*)//#\s+@include\s+(.+)\s*')
+INCLUDE_PATTERN = re.compile('^(\s*)//#\s+@include\s+(\S+)\s*$')
+VERSION_META_PATTERN = re.compile('^\s*//\s+@version\s+(\S+)\s*$')
 GIT_META_PATTERN = re.compile('^(\s*//\s+@git\s+)<commit>(\s*)$')
-GIT_VERSION = git.Repo().head.commit.hexsha
+GIT_REVISION = git.Repo().head.commit.hexsha
 
 INPUT_USER_JS = 'template.user.js'
 BUILD_USER_JS = 'leetcode_tool.out.user.js'
@@ -27,6 +28,15 @@ def get_include_directive(line):
         return None
 
 
+def extract_version(file):
+    with open(file) as f:
+        for line in f:
+            matched = VERSION_META_PATTERN.match(line)
+            if matched:
+                return matched.group(1)
+    return None
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
@@ -41,15 +51,20 @@ def cli(ctx):
 @cli.command(name='build')
 def build_js(input_js=INPUT_USER_JS, output_js=BUILD_USER_JS):
     """Build .user.js"""
+
     out_lines = []
     with open(input_js, 'rt', encoding='utf8') as in_file:
-        version_added = False
+        is_meta = True
 
         for line in in_file:
-            # add commit hash to @git tag
-            if not version_added and GIT_META_PATTERN.match(line):
-                line = GIT_META_PATTERN.sub('\\1{}\\2'.format(GIT_VERSION), line)
-                version_added = True
+            if line.startswith('// ==/UserScript=='):
+                # userscript metadata ended
+                is_meta = False
+
+            if is_meta:
+                if GIT_META_PATTERN.match(line):
+                    # add commit hash to @git tag
+                    line = GIT_META_PATTERN.sub('\\1{}\\2'.format(GIT_REVISION), line)
 
             include = get_include_directive(line)
             if include:
@@ -70,6 +85,7 @@ def build_js(input_js=INPUT_USER_JS, output_js=BUILD_USER_JS):
 @cli.command(name='release')
 def commit_build(build=BUILD_USER_JS, target=RELEASE_USER_JS):
     """Commit .user.js to `build` branch"""
+
     repo = git.Repo()
     try:
         # switch to build branch
@@ -78,7 +94,9 @@ def commit_build(build=BUILD_USER_JS, target=RELEASE_USER_JS):
         shutil.copyfile(build, target)
         # commit it
         repo.index.add([target])
-        repo.index.commit('Build from <{}>'.format(GIT_VERSION))
+        version = extract_version(target)
+        assert version
+        repo.index.commit('Build v{} from <{}>'.format(version, GIT_REVISION))
     finally:
         # switch back to master
         repo.branches['master'].checkout()

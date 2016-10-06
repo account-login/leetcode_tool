@@ -2,9 +2,12 @@
 
 
 import re
+import git  # pip install gitpython
 
 
 INCLUDE_PATTERN = re.compile('^(\s*)//#\s+@include\s+(.+)\s*')
+GIT_META_PATTERN = re.compile('^(\s*//\s+@git\s+)<commit>(\s*)$')
+GIT_VERSION = git.Repo().head.commit.hexsha
 
 
 def get_include_directive(line):
@@ -21,7 +24,14 @@ def get_include_directive(line):
 def process(input_js, output_js):
     out_lines = []
     with open(input_js, 'rt', encoding='utf8') as in_file:
+        version_added = False
+
         for line in in_file:
+            # add commit hash to @git tag
+            if not version_added and GIT_META_PATTERN.match(line):
+                line = GIT_META_PATTERN.sub('\\1{}\\2'.format(GIT_VERSION), line)
+                version_added = True
+
             include = get_include_directive(line)
             if include:
                 out_lines.append('\n{indent}// BEGIN INCLUDE {file}\n'.format_map(include))

@@ -3,7 +3,7 @@
 // @match           https://leetcode.com/problems/*
 // @match           https://leetcode.com/submissions/detail/*
 // @description     This tool shows tables on database problems after you submit a wrong answer, so you don't need to read their unreadable JSON representation of tables.
-// @version         1.2
+// @version         1.3
 // ==/UserScript==
 
 // @todo table sorting, diff functionality

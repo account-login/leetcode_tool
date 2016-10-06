@@ -9,9 +9,9 @@ var sql_table = (function ( factory ) {
         };
 
         var obj = factory.apply( null, args );
-        for (var prop in obj) {
-            if (obj.hasOwnProperty(prop)) {
-                callable[prop] = obj[prop];
+        for ( var prop in obj ) {
+            if ( obj.hasOwnProperty( prop ) ) {
+                callable[ prop ] = obj[ prop ];
             }
         }
 
@@ -37,6 +37,28 @@ var sql_table = (function ( factory ) {
      * @returns {jQuery}    The table object
      */
     var create_table_elem = function ( obj ) {
+
+        /**
+         * Return the HTML representation of value wrap in <td>
+         * @param value
+         * @return {jQuery}
+         */
+        var repr_cell = function ( value ) {
+            if ( _.isNull( value ) ) {
+                return $( '<td>' )
+                    .append( $( '<em>' ).text( 'NULL' ) );
+            } else if ( _.isString( value ) ) {
+                return $( '<td>' ).text( JSON.stringify( value ) );
+            } else if ( _.isNumber( value ) ) {
+                return $( '<td>' )
+                    .text( value )
+                    .css( 'text-align', 'right' );
+            } else {
+                // unknown type
+                return $( '<td>' ).text( value );
+            }
+        };
+
         /**
          * Wrap a list of text with tag
          * @param {string[]}    arr
@@ -55,7 +77,7 @@ var sql_table = (function ( factory ) {
                 .append( $( '<tr>' ).append( wrap_text( obj.headers, '<th>' ) ) ) )
             .append( $( '<tbody>' )
                 .append( _( obj.values ).map( function ( row ) {
-                    return $( '<tr>' ).append( wrap_text( row, '<td>' ) );
+                    return $( '<tr>' ).append( _( row ).map( repr_cell ) );
                 } ) ) );
     };
 

@@ -3,7 +3,7 @@
 
 import re
 import shutil
-import click    # pip install ckick
+import click    # pip install click
 import git      # pip install gitpython
 
 
